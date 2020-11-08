@@ -1,6 +1,15 @@
 from flask import Flask, jsonify, request
+from database.db import initialize_db
+from database.models import Movie
+from mongoengine import NotUniqueError, DoesNotExist
 
 app = Flask(__name__)
+
+app.config['MONGODB_SETTINGS'] = {
+   'host': 'mongodb+srv://testuser:testpassword@cluster0.6xtof.mongodb.net/movie-bag?retryWrites=true&w=majority'
+}
+
+initialize_db(app)
 
 '''
 REST API
@@ -12,52 +21,40 @@ Update     /movies/{id}  PUT
 Delete     /movies/{id}  DELETE
 '''
 
-movies = [
-    {
-        "name": "Forest Gump",
-        "casts": ['Tom Hanks'],
-        "genres": ["Comedy", "Drama"]
-    },
-    {
-        "name": "Hackshaw Ridge",
-        "casts": ["Andrew Garfield"],
-        "genres": ["War"]
-    }
-]
  
 @app.route('/movies')
 def index():
-    return jsonify(movies)
+    movies = Movie.objects().to_json()
+    return movies
 
 
-@app.route('/movies/<int:index>')
-def get_movie(index):
+@app.route('/movies/<id>')
+def get_movie(id):
     try:
-        return movies[index]
-    except IndexError:
+        return Movie.objects.get(id=id).to_json()
+    except DoesNotExist:
         return {"error": "Invalid Movie id"}, 404
 
 
 @app.route('/movies', methods=["POST"])
 def create_movie():
-    movie = request.get_json()
-    movies.append(movie)
-    return {"id": len(movies) - 1 }
+    body = request.get_json()
+    try:
+        movie = Movie(**body).save()
+        return {"id": str(movie.id) }
+    except NotUniqueError:
+        return {"error": "Movie already exists"}, 400
 
-@app.route('/movies/<int:index>', methods=["PUT"])
-def update_movie(index):
-    movie = request.get_json()
-    movies[index] = movie
+@app.route('/movies/<id>', methods=["PUT"])
+def update_movie(id):
+    body = request.get_json()
+    Movie.objects.get(id=id).update(**body)
     return {"message": "success"}
 
-@app.route('/movies/<int:index>', methods=["DELETE"])
-def delete_movie(index):
-    del movies[index]
+@app.route('/movies/<id>', methods=["DELETE"])
+def delete_movie(id):
+    Movie.objects.get(id=id).delete()
     return {"message": "success"} 
-
-
-
-
 
 if __name__ == "__main__":
     app.run()

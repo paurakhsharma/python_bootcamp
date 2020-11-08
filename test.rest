@@ -2,7 +2,7 @@
 GET http://localhost:5000/movies
 
 ### Get movie
-GET http://localhost:5000/movies/1
+GET http://localhost:5000/movies/5fa7a3d7d78a80cdeb9fddbe
 
 ### Add movie
 POST http://localhost:5000/movies
@@ -13,13 +13,13 @@ content-type: application/json
     "Jake Gyllenhaal"
   ],
   "genres": [
-    "Drama"
+    "Drama",
+    "Biography"
   ],
   "name": "October Sky"
 }
-
 ### Update movie
-PUT http://localhost:5000/movies/2
+PUT http://localhost:5000/movies/5fa7a3d7d78a80cdeb9fddbe
 content-type: application/json
 
 {
@@ -27,8 +27,7 @@ content-type: application/json
     "Jake Gyllenhaal"
   ],
   "genres": [
-    "Drama",
-    "Biography"
+    "Drama"
   ],
   "name": "October Sky"
 }
